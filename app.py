@@ -9,7 +9,7 @@ from flask import Response
 
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
-    app.config["SECRET_KEY"] = "change-me-in-production"  # замените на безопасный секрет
+    app.config["SECRET_KEY"] = "change-me-in-production"
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 
     @app.route("/")
@@ -20,7 +20,6 @@ def create_app():
     def generate():
         payload = request.get_json(silent=True) or {}
 
-        # Валидация входных параметров
         try:
             length = int(payload.get("length", 12))
         except (TypeError, ValueError):
@@ -40,7 +39,6 @@ def create_app():
         numbers = bool(payload.get("numbers", True))
         symbols = bool(payload.get("symbols", True))
 
-        # Применяем преднастроенный уровень сложности, если указан
         if level in ("low", "medium", "high", "max"):
             if level == "low":
                 lowercase, uppercase, numbers, symbols = True, False, True, False
@@ -51,7 +49,6 @@ def create_app():
             elif level == "max":
                 lowercase, uppercase, numbers, symbols = True, True, True, True
 
-        # Подготовка генераторов для двух режимов
         charsets = []
         if uppercase:
             charsets.append(string.ascii_uppercase)
@@ -89,7 +86,6 @@ def create_app():
             size = max(size, 1)
             return len(pwd) * math.log2(size)
 
-        # Небольшой встроенный словарь (можно расширять)
         WORDLIST = [
             "север","юг","восток","запад","огонь","вода","земля","воздух","камень","лес","горный",
             "ночь","день","лужа","сокол","ветер","код","линза","луна","снег","мост","пламя",
@@ -103,12 +99,10 @@ def create_app():
             return sep.join(chosen)
 
         def entropy_bits_passphrase(words_count: int) -> float:
-            # энтропия динон-системы: log2(V^n) = n * log2(V)
             vocab = max(len(WORDLIST), 1)
             return words_count * math.log2(vocab)
 
         def strength_label_and_percent(bits: float):
-            # 128 бит == 100%, 100 бит ~ 80%, 60 бит ~ 50%
             percent = max(0, min(100, round(bits / 128 * 100)))
             if percent >= 90:
                 label = "Отличный"
@@ -159,7 +153,6 @@ def create_app():
                 return jsonify({"error": "Выберите хотя бы один тип символов"}), 400
             raise
 
-        # История в сессии (до 100 последних паролей)
         session.permanent = True
         history = session.get("history", [])
         for item in passwords:
@@ -180,7 +173,6 @@ def create_app():
     @app.route("/history", methods=["GET"]) 
     def history():
         history = session.get("history", [])
-        # Возвращаем последние 50 по убыванию свежести
         return jsonify({"history": list(reversed(history[-50:]))})
 
     @app.route("/clear_history", methods=["POST"]) 
@@ -199,7 +191,6 @@ def create_app():
             sio = StringIO()
             sio.write("password,strength_percent\n")
             for it in items:
-                # простейшее экранирование запятых
                 p = str(it.get("p", "")).replace(",", " ")
                 s = str(it.get("s", ""))
                 sio.write(f"{p},{s}\n")
@@ -223,4 +214,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
+
     app.run(debug=True)
