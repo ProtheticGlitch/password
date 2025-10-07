@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Генератор паролей</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Генератор паролей</h1>
+      </header>
+
+      <div class="layout">
+        <section class="controls">
+          <form id="generator-form">
+
+          <div class="field">
+            <label for="length">Длина пароля: <span id="length-value">12</span></label>
+            <input type="range" id="length" name="length" min="8" max="64" value="12" />
+          </div>
+
+          <div class="field">
+            <label for="level">Уровень сложности (пресеты)</label>
+            <select id="level" name="level">
+              <option value="custom" selected>Пользовательский</option>
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+              <option value="max">Максимальный</option>
+            </select>
+          </div>
+
+          <div class="grid-2">
+            <label class="checkbox">
+              <input type="checkbox" id="uppercase" name="uppercase" checked />
+              <span>Прописные буквы (A-Z)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="numbers" name="numbers" checked />
+              <span>Цифры (0-9)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="lowercase" name="lowercase" checked />
+              <span>Строчные буквы (a-z)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="symbols" name="symbols" checked />
+              <span>Спецсимволы (!@#$%^&*...)</span>
+            </label>
+          </div>
+
+          
+
+          <div class="field">
+            <label for="count">Количество паролей</label>
+            <select id="count" name="count">
+              <option value="1" selected>1</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="generate-btn">Сгенерировать пароли</button>
+          </div>
+          </form>
+        </section>
+
+        <section class="results">
+          <h2>Результаты</h2>
+        <div class="toolbar">
+          <button id="copy-all" class="ghost">Скопировать все</button>
+          <button id="show-history">Показать историю</button>
+          <button id="clear-history" class="ghost">Очистить историю</button>
+          <a id="export-txt" class="ghost" href="/export?fmt=txt">Экспорт TXT</a>
+          <a id="export-csv" class="ghost" href="/export?fmt=csv">Экспорт CSV</a>
+        </div>
+        <div id="results-list" class="results-list"></div>
+        <div id="history-panel" class="history hidden">
+          <h3>История (последние)</h3>
+          <ul id="history-list"></ul>
+        </div>
+        </section>
+      </div>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <span class="handmade">Сделал с помощью ChatGPT</span>
+          <span class="dot">•</span>
+          <span>Автор: <strong>Зайцев Роман</strong></span>
+          <span class="dot">•</span>
+          <span>Версия: v1.0</span>
+        </div>
+      </footer>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="/static/js/script.js"></script>
+  </body>
+  </html>
+
+
