@@ -10,12 +10,6 @@
 -   🌐 Удобный веб-интерфейс
 -   🔒 Локальное хранение данных
 
-## 🛠️ Технологии
-
--   [Python](https://www.python.org/)
--   [Flask](https://flask.palletsprojects.com/)
--   HTML5 / CSS3 / JavaScript
-
 ## 📦 Установка и запуск
 
 ``` bash
@@ -31,11 +25,11 @@ python app.py
 
     password-manager/
     │
-    ├── app.py               # Основной файл приложения
-    ├── static/              # Стили и скрипты
+    ├── app.py     
+    ├── static/              
     │   ├── css/
     │   └── js/
-    └── templates/           # HTML-шаблоны
+    └── templates/          
         └── index.html
 
 ## 📝 Лицензия
