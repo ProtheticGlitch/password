@@ -32,3 +32,4 @@ python app.py
 ## 📝 Лицензия
 
 Этот проект распространяется под лицензией [MIT](LICENSE).
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8bdf4db4-8035-4d65-8924-e489fa53e5d6" />
