@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Генератор паролей</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <div class="container" id="app-root" data-user="{% if user %}{{ user.username }}{% else %}guest{% endif %}">
+      <header class="header">
+        <div>
+          <h1>Генератор паролей</h1>
+        </div>
+        <div class="header-actions">
+          {% if user %}
+          <span>Привет, <strong>{{ user.username }}</strong></span>
+          <form action="/logout" method="post" style="margin:0">
+            <button type="submit" class="ghost">Выйти</button>
+          </form>
+          {% else %}
+          <a href="/login" class="ghost">Войти</a>
+          <a href="/register" class="ghost">Регистрация</a>
+          {% endif %}
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="controls">
+          <form id="generator-form">
+
+          <div class="field">
+            <label for="length">Длина пароля</label>
+            <input type="number" id="length" name="length" min="8" max="64" value="12" step="1" required />
+          </div>
+
+          
+
+          <div class="grid-2">
+            <label class="checkbox">
+              <input type="checkbox" id="uppercase" name="uppercase" checked />
+              <span>Прописные буквы (A-Z)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="numbers" name="numbers" checked />
+              <span>Цифры (0-9)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="lowercase" name="lowercase" checked />
+              <span>Строчные буквы (a-z)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="symbols" name="symbols" checked />
+              <span>Спецсимволы (!@#$%^&*...)</span>
+            </label>
+          </div>
+
+          
+
+          <div class="field">
+            <label for="count">Количество паролей</label>
+            <select id="count" name="count">
+              <option value="1" selected>1</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="generate-btn">Сгенерировать пароли</button>
+          </div>
+          </form>
+        </section>
+
+        <section class="results">
+          <h2 style="margin:0 0 8px; display:flex; align-items:center; gap:8px;">Результаты <span class="chip"><span class="dot"></span> оффлайн-генерация</span></h2>
+        <div class="toolbar">
+          <button id="toggle-view" class="ghost">Вид: карточки</button>
+          <button id="copy-all" class="ghost">Скопировать все</button>
+          <button id="show-history">Показать историю</button>
+          <button id="clear-history" class="ghost">Очистить историю</button>
+          <a id="export-txt" class="ghost" href="/export?fmt=txt">Экспорт TXT</a>
+          <a id="export-csv" class="ghost" href="/export?fmt=csv">Экспорт CSV</a>
+          <span id="fav-counter" class="chip" style="margin-left:auto;">
+            ★ Избранных: <span id="fav-count">0</span>
+          </span>
+        </div>
+        <div id="results-list" class="results-list"></div>
+        <div id="history-panel" class="history hidden">
+          <h3>Избранное</h3>
+          <ul id="favorites-list"></ul>
+          <h3 style="margin-top:12px;">История (последние)</h3>
+          <ul id="history-list"></ul>
+        </div>
+        </section>
+      </div>
+
+      
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <script src="/static/js/script.js"></script>
+  </body>
+  </html>
+
+

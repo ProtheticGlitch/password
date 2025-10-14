@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Регистрация</h1>
+        <div class="header-actions">
+          <a href="/" class="ghost">На главную</a>
+        </div>
+      </header>
+
+      <section class="controls" style="max-width: 420px; margin: 24px auto 0;">
+        {% if error %}
+        <div class="toast show" style="position:static; transform:none;">{{ error }}</div>
+        {% endif %}
+        <form action="/register" method="post">
+          <div class="field">
+            <label for="username">Логин</label>
+            <input id="username" name="username" type="text" required />
+          </div>
+          <div class="field">
+            <label for="password">Пароль</label>
+            <input id="password" name="password" type="password" required />
+          </div>
+          <div class="actions">
+            <button type="submit">Создать аккаунт</button>
+            <a href="/login" class="ghost" style="margin-left:8px;">Войти</a>
+          </div>
+        </form>
+      </section>
+    </div>
+  </body>
+  </html>
+
+
