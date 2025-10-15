@@ -34,8 +34,10 @@ python app.py
 Этот проект распространяется под лицензией [MIT](LICENSE).
 
 ## 📸 Скриншоты
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6d5e83b2-4923-4e61-bad6-1c9cf4226155" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/e7948c65-c6d6-4841-b704-68c0bafb65bb" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/e4e65368-c85e-4eb4-bb6b-e12030d10b31" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a5234624-1139-402c-af31-fb9e2a3aeb83" />
+
+
 
 
 
