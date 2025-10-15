@@ -28,6 +28,8 @@ python app.py
     │   └── js/
     └── templates/          
         └── index.html
+        ├── login.html
+        └── register.html
 
 ## 📝 Лицензия
 
