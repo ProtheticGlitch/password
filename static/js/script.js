@@ -183,7 +183,16 @@ function createCard(item) {
     updateFavCounter();
   });
 
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'icon-btn';
+  saveBtn.type = 'button';
+  saveBtn.innerHTML = '💾 Сохранить';
+  saveBtn.addEventListener('click', () => {
+    showPasswordForm('add', { password: item.password });
+  });
+
   actions.appendChild(favBtn);
+  actions.appendChild(saveBtn);
   
 
   wrapper.appendChild(pass);
@@ -371,5 +380,300 @@ document.addEventListener('pointerdown', (e) => {
   target.style.setProperty('--x', x + '%');
   target.style.setProperty('--y', y + '%');
 });
+
+// ==================== СОХРАНЕННЫЕ ПАРОЛИ ====================
+
+// Элементы интерфейса
+let generatorTab, savedTab, generatorSection, savedPasswordsSection;
+let addPasswordBtn, passwordForm, passwordFormElement, formTitle;
+let passwordIdInput, websiteInput, loginInput, passwordInput;
+let cancelFormBtn, passwordsTbody;
+
+// Инициализация элементов после загрузки DOM
+function initSavedPasswordsElements() {
+  generatorTab = document.getElementById('generator-tab');
+  savedTab = document.getElementById('saved-tab');
+  generatorSection = document.querySelector('.layout');
+  savedPasswordsSection = document.getElementById('saved-passwords-section');
+  addPasswordBtn = document.getElementById('add-password-btn');
+  passwordForm = document.getElementById('password-form');
+  passwordFormElement = document.getElementById('password-form-element');
+  formTitle = document.getElementById('form-title');
+  passwordIdInput = document.getElementById('password-id');
+  websiteInput = document.getElementById('website-input');
+  loginInput = document.getElementById('login-input');
+  passwordInput = document.getElementById('password-input');
+  cancelFormBtn = document.getElementById('cancel-form');
+  passwordsTbody = document.getElementById('passwords-tbody');
+}
+
+// Переключение между вкладками
+function showGenerator() {
+  generatorTab.classList.add('active');
+  savedTab.classList.remove('active');
+  generatorSection.style.display = 'grid';
+  savedPasswordsSection.style.display = 'none';
+}
+
+function showSavedPasswords() {
+  if (savedTab) savedTab.classList.add('active');
+  if (generatorTab) generatorTab.classList.remove('active');
+  if (generatorSection) generatorSection.style.display = 'none';
+  if (savedPasswordsSection) {
+    savedPasswordsSection.style.display = 'block';
+  }
+  loadSavedPasswords();
+}
+
+// Инициализация обработчиков событий
+function initSavedPasswordsEventListeners() {
+  generatorTab?.addEventListener('click', showGenerator);
+  savedTab?.addEventListener('click', showSavedPasswords);
+  
+  addPasswordBtn?.addEventListener('click', () => {
+    showPasswordForm('add');
+  });
+
+  cancelFormBtn?.addEventListener('click', hidePasswordForm);
+
+  passwordFormElement?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+      website: websiteInput.value.trim(),
+      login: loginInput.value.trim(),
+      password: passwordInput.value.trim()
+    };
+    
+    if (!formData.website || !formData.login || !formData.password) {
+      showToast('Заполните все поля');
+      return;
+    }
+    
+    await savePassword(formData);
+  });
+}
+
+// Загрузка сохраненных паролей
+async function loadSavedPasswords() {
+  try {
+    const response = await fetch('/saved_passwords');
+    const data = await response.json();
+    
+    if (data.error) {
+      showToast('Ошибка загрузки: ' + data.error);
+      return;
+    }
+    
+    renderPasswordsTable(data.passwords || []);
+  } catch (error) {
+    showToast('Ошибка сети при загрузке паролей');
+  }
+}
+
+// Отображение таблицы паролей
+function renderPasswordsTable(passwords) {
+  passwordsTbody.innerHTML = '';
+  
+  if (passwords.length === 0) {
+    passwordsTbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align: center; color: var(--muted); padding: 24px;">
+          Нет сохраненных паролей
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  passwords.forEach(password => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${escapeHtml(password.website)}</td>
+      <td>${escapeHtml(password.login)}</td>
+      <td class="password-cell">
+        <span class="password-masked" data-password="${escapeHtml(password.password)}">••••••••</span>
+        <button class="toggle-password" data-password="${escapeHtml(password.password)}">👁️</button>
+      </td>
+      <td class="password-actions">
+        <button class="copy-password" data-password="${escapeHtml(password.password)}">Копировать</button>
+        <button class="edit-password" data-id="${password.id}" data-website="${escapeHtml(password.website)}" data-login="${escapeHtml(password.login)}" data-password="${escapeHtml(password.password)}">Изменить</button>
+        <button class="delete-password danger" data-id="${password.id}">Удалить</button>
+      </td>
+    `;
+    passwordsTbody.appendChild(row);
+  });
+  
+  // Добавляем обработчики событий
+  addPasswordEventListeners();
+}
+
+// Добавление обработчиков событий для паролей
+function addPasswordEventListeners() {
+  // Переключение видимости пароля
+  document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const password = e.target.getAttribute('data-password');
+      const maskedSpan = e.target.previousElementSibling;
+      const isMasked = maskedSpan.classList.contains('password-masked');
+      
+      if (isMasked) {
+        maskedSpan.textContent = password;
+        maskedSpan.classList.remove('password-masked');
+        e.target.textContent = '🙈';
+      } else {
+        maskedSpan.textContent = '••••••••';
+        maskedSpan.classList.add('password-masked');
+        e.target.textContent = '👁️';
+      }
+    });
+  });
+  
+  // Копирование пароля
+  document.querySelectorAll('.copy-password').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const password = e.target.getAttribute('data-password');
+      try {
+        await navigator.clipboard.writeText(password);
+        showToast('Пароль скопирован');
+      } catch (error) {
+        showToast('Не удалось скопировать пароль');
+      }
+    });
+  });
+  
+  // Редактирование пароля
+  document.querySelectorAll('.edit-password').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.getAttribute('data-id');
+      const website = e.target.getAttribute('data-website');
+      const login = e.target.getAttribute('data-login');
+      const password = e.target.getAttribute('data-password');
+      
+      showPasswordForm('edit', { id, website, login, password });
+    });
+  });
+  
+  // Удаление пароля
+  document.querySelectorAll('.delete-password').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.target.getAttribute('data-id');
+      if (confirm('Вы уверены, что хотите удалить этот пароль?')) {
+        await deletePassword(id);
+      }
+    });
+  });
+}
+
+// Показать форму пароля
+function showPasswordForm(mode, data = {}) {
+  formTitle.textContent = mode === 'edit' ? 'Изменить пароль' : 'Добавить пароль';
+  passwordIdInput.value = data.id || '';
+  websiteInput.value = data.website || '';
+  loginInput.value = data.login || '';
+  passwordInput.value = data.password || '';
+  
+  passwordForm.classList.remove('hidden');
+  websiteInput.focus();
+}
+
+// Скрыть форму пароля
+function hidePasswordForm() {
+  passwordForm.classList.add('hidden');
+  passwordFormElement.reset();
+  passwordIdInput.value = '';
+}
+
+// Добавление/редактирование пароля
+async function savePassword(formData) {
+  const isEdit = passwordIdInput.value !== '';
+  const url = isEdit ? `/saved_passwords/${passwordIdInput.value}` : '/saved_passwords';
+  const method = isEdit ? 'PUT' : 'POST';
+  
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      showToast('Ошибка: ' + data.error);
+      return false;
+    }
+    
+    showToast(data.message || 'Пароль сохранен');
+    hidePasswordForm();
+    await loadSavedPasswords();
+    return true;
+  } catch (error) {
+    showToast('Ошибка сети при сохранении');
+    return false;
+  }
+}
+
+// Удаление пароля
+async function deletePassword(id) {
+  try {
+    const response = await fetch(`/saved_passwords/${id}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      showToast('Ошибка: ' + data.error);
+      return false;
+    }
+    
+    showToast(data.message || 'Пароль удален');
+    await loadSavedPasswords();
+    return true;
+  } catch (error) {
+    showToast('Ошибка сети при удалении');
+    return false;
+  }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+  // Инициализируем элементы
+  initSavedPasswordsElements();
+  
+  // Показываем генератор по умолчанию
+  if (generatorSection && savedPasswordsSection) {
+    generatorSection.style.display = 'grid';
+    savedPasswordsSection.style.display = 'none';
+  }
+});
+
+// Обработчик отправки формы пароля
+async function handlePasswordFormSubmit(event) {
+  event.preventDefault();
+  
+  const formData = {
+    website: websiteInput.value.trim(),
+    login: loginInput.value.trim(),
+    password: passwordInput.value.trim()
+  };
+  
+  if (!formData.website || !formData.login || !formData.password) {
+    showToast('Заполните все поля');
+    return;
+  }
+  
+  await savePassword(formData);
+}
+
+// Утилита для экранирования HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
 
