@@ -52,10 +52,42 @@ def create_app():
             );
             """
         )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS saved_passwords (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                website TEXT NOT NULL,
+                login TEXT NOT NULL,
+                password TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            """
+        )
         db.commit()
 
     with app.app_context():
         init_db()
+
+    @app.after_request
+    def add_no_cache_headers(response):
+        try:
+            path = request.path or ""
+        except Exception:
+            path = ""
+        dynamic_prefixes = (
+            "/generate",
+            "/history",
+            "/clear_history",
+            "/export",
+            "/saved_passwords",
+        )
+        if any(path.startswith(p) for p in dynamic_prefixes):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+        return response
 
     @app.before_request
     def load_logged_in_user():
@@ -301,6 +333,85 @@ def create_app():
                 mimetype="text/plain; charset=utf-8",
                 headers={"Content-Disposition": "attachment; filename=generated_passwords.txt"}
             )
+
+    # ---------------------- SAVED PASSWORDS ----------------------
+    @app.route("/saved_passwords", methods=["GET"])
+    def get_saved_passwords():
+        if not g.user:
+            return jsonify({"error": "Требуется авторизация"}), 401
+        db = get_db()
+        rows = db.execute(
+            "SELECT id, website, login, password, created_at, updated_at FROM saved_passwords WHERE user_id = ? ORDER BY updated_at DESC",
+            (g.user["id"],)
+        ).fetchall()
+        passwords = [{"id": r["id"], "website": r["website"], "login": r["login"], "password": r["password"], "created_at": r["created_at"], "updated_at": r["updated_at"]} for r in rows]
+        return jsonify({"passwords": passwords})
+
+    @app.route("/saved_passwords", methods=["POST"])
+    def add_saved_password():
+        if not g.user:
+            return jsonify({"error": "Требуется авторизация"}), 401
+        data = request.get_json()
+        website = (data.get("website") or "").strip()
+        login = (data.get("login") or "").strip()
+        password = (data.get("password") or "").strip()
+        
+        if not website or not login or not password:
+            return jsonify({"error": "Заполните все поля"}), 400
+        
+        db = get_db()
+        try:
+            cursor = db.execute(
+                "INSERT INTO saved_passwords(user_id, website, login, password) VALUES(?, ?, ?, ?)",
+                (g.user["id"], website, login, password)
+            )
+            db.commit()
+            return jsonify({"id": cursor.lastrowid, "message": "Пароль сохранен"})
+        except Exception as e:
+            return jsonify({"error": "Ошибка при сохранении"}), 500
+
+    @app.route("/saved_passwords/<int:password_id>", methods=["PUT"])
+    def update_saved_password(password_id):
+        if not g.user:
+            return jsonify({"error": "Требуется авторизация"}), 401
+        data = request.get_json()
+        website = (data.get("website") or "").strip()
+        login = (data.get("login") or "").strip()
+        password = (data.get("password") or "").strip()
+        
+        if not website or not login or not password:
+            return jsonify({"error": "Заполните все поля"}), 400
+        
+        db = get_db()
+        try:
+            cursor = db.execute(
+                "UPDATE saved_passwords SET website = ?, login = ?, password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?",
+                (website, login, password, password_id, g.user["id"])
+            )
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Пароль не найден"}), 404
+            db.commit()
+            return jsonify({"message": "Пароль обновлен"})
+        except Exception as e:
+            return jsonify({"error": "Ошибка при обновлении"}), 500
+
+    @app.route("/saved_passwords/<int:password_id>", methods=["DELETE"])
+    def delete_saved_password(password_id):
+        if not g.user:
+            return jsonify({"error": "Требуется авторизация"}), 401
+        
+        db = get_db()
+        try:
+            cursor = db.execute(
+                "DELETE FROM saved_passwords WHERE id = ? AND user_id = ?",
+                (password_id, g.user["id"])
+            )
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Пароль не найден"}), 404
+            db.commit()
+            return jsonify({"message": "Пароль удален"})
+        except Exception as e:
+            return jsonify({"error": "Ошибка при удалении"}), 500
 
     return app
 

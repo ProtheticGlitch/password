@@ -13,6 +13,10 @@
           <h1>Генератор паролей</h1>
         </div>
         <div class="header-actions">
+          <div class="nav-tabs">
+            <button id="generator-tab" class="nav-tab active" onclick="showGenerator()">Генератор</button>
+            <button id="saved-tab" class="nav-tab" onclick="showSavedPasswords()">Сохраненные</button>
+          </div>
           {% if user %}
           <span>Привет, <strong>{{ user.username }}</strong></span>
           <form action="/logout" method="post" style="margin:0">
@@ -94,6 +98,60 @@
           <ul id="history-list"></ul>
         </div>
         </section>
+
+        <!-- Секция сохраненных паролей -->
+        <section class="saved-passwords" id="saved-passwords-section">
+          <div class="section-header">
+            <h2>Сохраненные пароли</h2>
+            <button id="add-password-btn" class="primary-btn" onclick="showPasswordForm('add')">+ Добавить пароль</button>
+          </div>
+          
+          <!-- Форма добавления/редактирования пароля -->
+          <div id="password-form" class="password-form hidden">
+            <h3 id="form-title">Добавить пароль</h3>
+            <form id="password-form-element" onsubmit="handlePasswordFormSubmit(event)">
+              <input type="hidden" id="password-id" value="">
+              <div class="form-row">
+                <div class="field">
+                  <label for="website-input">Сайт</label>
+                  <input type="text" id="website-input" required>
+                </div>
+                <div class="field">
+                  <label for="login-input">Логин</label>
+                  <input type="text" id="login-input" required>
+                </div>
+                <div class="field">
+                  <label for="password-input">Пароль</label>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="password" id="password-input" required style="flex:1 1 auto;">
+                    <button type="button" id="toggle-password-btn" class="icon-btn" onclick="toggleFormPassword()" aria-label="Показать пароль">👁️</button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="primary-btn" onclick="handlePasswordFormSubmit(event)">Сохранить</button>
+                <button type="button" id="cancel-form" class="ghost" onclick="hidePasswordForm()">Отмена</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Таблица паролей -->
+          <div class="passwords-table-container">
+            <table id="passwords-table" class="passwords-table">
+              <thead>
+                <tr>
+                  <th>Сайт</th>
+                  <th>Логин</th>
+                  <th>Пароль</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="passwords-tbody">
+                <!-- Записи будут добавлены через JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
       
@@ -103,6 +161,7 @@
     <canvas id="confetti-canvas"></canvas>
 
     <script src="/static/js/script.js"></script>
+    <script src="/static/js/saved.js"></script>
   </body>
   </html>
 
