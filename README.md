@@ -36,6 +36,8 @@ python app.py
 ## 📸 Скриншоты
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/e4e65368-c85e-4eb4-bb6b-e12030d10b31" />
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a5234624-1139-402c-af31-fb9e2a3aeb83" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/1157cc7a-5b6a-405d-8cab-a3e3053fe62d" />
+
 
 ## 📝 Лицензия
 
